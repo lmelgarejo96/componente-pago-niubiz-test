@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://pocpaymentserve.s3.amazonaws.com/payform.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Montserrat", sans-serif;
+      }
+      button {
+        display: block;
+        background: #000;
+        color: white;
+        width: 100%;
+        padding: 8px 10px;
+      }
+      .form {
+        min-width: 500px;
+        max-width: 500px;
+      }
+      .form__control {
+        padding: 8px 10px;
+        border: 1px solid #000;
+        margin-bottom: 8px;
+      }
+      textarea {
+        width: 100%;
+      }
+      button {
+        cursor: pointer;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form">
+      <div id="formJson">
+        <textarea
+          name=""
+          id="configurationJson"
+          placeholder="JSON Configuración"
+          cols="30"
+          rows="10"
+        ></textarea>
+        <button id="configurationBtn" type="button">CargarForm</button>
+        <br />
+        <hr />
+      </div>
+      <form id="formNiubiz" class="hidden">
+        <div class="form__control" id="inputTarjeta" style="width: 100%"></div>
+        <div
+          class="form__control"
+          id="inputFechaNacimiento"
+          style="width: 100%"
+        ></div>
+        <div class="form__control" id="inputCvv" style="width: 100%"></div>
+        <button>Pagar</button>
+      </form>
+    </div>
+
+    <script src="https://pocpaymentserve.s3.amazonaws.com/payform.min.js"></script>
+    <script>
+      console.log(payform);
+      const textarea = document.getElementById("configurationJson");
+      const btnCarga = document.getElementById("configurationBtn");
+      const formNiubiz = document.getElementById("formNiubiz");
+      const formJson = document.getElementById("formJson")
+      
+
+      btnCarga.addEventListener("click", cargarNiubiz);
+
+      function cargarNiubiz() {
+        try {
+          const value = textarea.value;
+          console.log(value);
+          const config = JSON.parse(value);
+          loadFormNiubiz(config);
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      function loadFormNiubiz(config) {
+        window.configuration = config;
+        payform.setConfiguration(config);
+
+        const styles = {
+          base: {
+            color: "#495057",
+            fontWeight: 700,
+            fontFamily: '"Montserrat", sans-serif',
+            fontSize: "16px",
+            fontSmoothing: "antialiased",
+            placeholder: {
+              color: "#c4c4c4",
+            },
+            autofill: {
+              color: "#e39f48",
+            },
+          },
+          invalid: {
+            color: "#dc3545",
+            "::placeholder": { color: "#FFCCA5" },
+          },
+        };
+
+        const cardNumber = payform.createElement(
+          "card-number",
+          { style: { ...styles }, placeholder: "Número de Tarjeta" },
+          "inputTarjeta"
+        );
+        const cardExpiry = payform.createElement(
+          "card-expiry",
+          {
+            style: { ...styles },
+            placeholder: "MM/AA",
+          },
+          "inputFechaNacimiento"
+        );
+        const cardCvv = payform.createElement(
+          "card-cvc",
+          {
+            style: { ...styles },
+            placeholder: "CVV",
+          },
+          "inputCvv"
+        );
+
+        cardNumber.then(
+          (element) => {
+            console.log("hide loader elemento CardNumber", element, cardNumber);
+            element.on("dcc", function (data) {
+              console.log("change data DCC", data);
+            });
+            element.on("installments", function (data) {
+              console.log("change data installments", data);
+            });
+            element.on("change", function (data) {
+              console.log("change data changeCard", data);
+            });
+          },
+          (res) => {
+            console.log("error al cargar numero de tarjeta", res);
+          }
+        );
+
+        cardExpiry.then(
+          (element) => {
+            console.log("hide loader elemento Expiry", element, cardExpiry);
+            element.on("change", function (data) {
+              console.log("change data changeExpiry", data);
+            });
+          },
+          (res) => {
+            console.log("error al cargar cardExpiry de tarjeta", res);
+          }
+        );
+
+        cardCvv.then(
+          (element) => {
+            // hide-loader
+            console.log("hide loader elemento CardCVV", element, this.cardCvv);
+            element.on("change", function (data) {
+              console.log("change data changeCvv", data);
+            });
+          },
+          (res) => {
+            console.log("error al cardCvv de tarjeta", res);
+          }
+        );
+
+        formNiubiz.classList.remove("hidden");
+        formJson.classList.add("hidden")
+      }
+    </script>
+  </body>
+</html>
