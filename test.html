@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POC NIUBIZ</title>
+  </head>
+
+  <body>
+    <section>
+      <div id="txtNumeroTarjeta"></div>
+
+      <div id="txtFechaVencimiento"></div>
+
+      <div id="txtCvv"></div>
+
+      <button onclick="sendPayment()">Enviar</button>
+    </section>
+
+    <script src="https://pocpaymentserve.s3.amazonaws.com/payform.min.js"></script>
+    <script type="text/javascript">
+      let info = {
+        cardNumber: null,
+        cardExpiry: null,
+        cardCvc: null,
+      };
+
+      const configuration = {
+        callbackurl:
+          "https://test.interseguro.pe/payment-api/api/v2/token?path=siv-web/zonasegura/pago&host=test.interseguro.pe&protocol=https",
+        sessionkey:
+          "3a6bdb3e70cc52c63f9bf96e46e655a895f35e98c4e1f0b88abf68779d0509df",
+        channel: "paycard",
+        merchantid: "602545705",
+        currency: [
+          { descripcion: "SOLES", codigo: "2163" },
+          { descripcion: "DOLARES", codigo: "2123" },
+        ],
+        purchasenumber: "0780000001",
+        amount: "590.65",
+        language: "es",
+        font: "https://fonts.googleapis.com/css?family=Montserrat:400&display=swap",
+        recurrentmaxamount: "1000.00",
+      };
+
+      payform.setConfiguration(configuration);
+
+      const elementStyles = {
+        base: {
+          color: "#666666",
+          fontWeight: 700,
+          fontFamily: "'Montserrat', sans-serif",
+          fontSize: "16px",
+          fontSmoothing: "antialiased",
+          placeholder: {
+            color: "#999999",
+          },
+          autofill: {
+            color: "#e39f48",
+          },
+        },
+        invalid: {
+          color: "#E25950",
+          "::placeholder": {
+            color: "#FFCCA5",
+          },
+        },
+      };
+      const cardNumber = payform.createElement(
+        "card-number",
+        {
+          style: elementStyles,
+          placeholder: "Número de tarjeta",
+        },
+        "txtNumeroTarjeta"
+      );
+
+      cardNumber.then((element) => {
+        element.on("bin", function (data) {
+          /* Tú código aquí */
+          info.cardNumber = data;
+          console.log("data", data);
+        });
+
+        element.on("change", function (data) {
+          /* Tú código aquí */
+        });
+
+        element.on("dcc", function (data) {
+          /* Tú código aquí */
+        });
+
+        element.on("installments", function (data) {
+          /* Tú código aquí */
+        });
+
+        element.on("lastFourDigits", function (data) {
+          /* Tú código aquí */
+        });
+      });
+
+      const cardExpiry = payform.createElement(
+        "card-expiry",
+        {
+          style: elementStyles,
+          placeholder: "MM/YY",
+        },
+        "txtFechaVencimiento"
+      );
+
+      cardExpiry.then((element) => {
+        element.on("change", function (data) {
+          info.cardExpiry = data;
+          console.log("cardExpiry", data);
+          /* Tú código aquí */
+        });
+      });
+
+      const cardCvc = payform.createElement(
+        "card-cvc",
+        {
+          style: elementStyles,
+          placeholder: "CVC",
+        },
+        "txtCvv"
+      );
+
+      cardCvc.then((element) => {
+        element.on("change", function (data) {
+          info.cardCvc = data;
+          console.log("cardCvc", data);
+          /* Tú código aquí */
+        });
+      });
+    </script>
+
+    <script type="text/javascript">
+      function sendPayment() {
+        const data = {
+          name: "Juan",
+          lastName: "Perez",
+          email: "jperez@test.com",
+          alias: "prueba",
+        };
+        console.log("info", info);
+        /* Caso de uso: Controles independientes */
+        payform
+          .createToken([cardNumber, cardExpiry, cardCvc], data)
+          .then(function (response) {
+            console.log("respuesta", response);
+          })
+          .catch(function (error) {
+            console.log("error", error);
+          });
+      }
+    </script>
+  </body>
+</html>

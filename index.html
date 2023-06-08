@@ -15,6 +15,10 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://pocpaymentserve.s3.amazonaws.com/payform.min.css"
+    />
     <style>
       body {
         display: flex;
@@ -30,13 +34,14 @@
         padding: 8px 10px;
       }
       .form {
-        min-width: 500px;
-        max-width: 500px;
+        min-width: 100%;
+        max-width: 100%;
       }
       .form__control {
         padding: 8px 10px;
         border: 1px solid #000;
         margin-bottom: 8px;
+        width: 100%;
       }
       textarea {
         width: 100%;
@@ -64,25 +69,21 @@
         <hr />
       </div>
       <form id="formNiubiz" class="hidden">
-        <div class="form__control" id="inputTarjeta" style="width: 100%"></div>
-        <div
-          class="form__control"
-          id="inputFechaNacimiento"
-          style="width: 100%"
-        ></div>
-        <div class="form__control" id="inputCvv" style="width: 100%"></div>
-        <button>Pagar</button>
+        <div class="form__control" id="txtNumeroTarjeta"></div>
+        <div class="form__control" id="txtFechaVencimiento"></div>
+        <div class="form__control" id="txtCvv"></div>
+        <button onclick="sendPayment()">Pagar</button>
       </form>
     </div>
 
     <script src="https://pocpaymentserve.s3.amazonaws.com/payform.min.js"></script>
-    <script>
+    <script type="text/javascript">
       console.log(payform);
       const textarea = document.getElementById("configurationJson");
       const btnCarga = document.getElementById("configurationBtn");
       const formNiubiz = document.getElementById("formNiubiz");
-      const formJson = document.getElementById("formJson")
-      
+      const formJson = document.getElementById("formJson");
+      let info = { cardCvv: null, cardNumber: null, cardExpiry: null };
 
       btnCarga.addEventListener("click", cargarNiubiz);
 
@@ -105,7 +106,7 @@
           base: {
             color: "#495057",
             fontWeight: 700,
-            fontFamily: '"Montserrat", sans-serif',
+            fontFamily: "'Montserrat', sans-serif",
             fontSize: "16px",
             fontSmoothing: "antialiased",
             placeholder: {
@@ -123,71 +124,93 @@
 
         const cardNumber = payform.createElement(
           "card-number",
-          { style: { ...styles }, placeholder: "Número de Tarjeta" },
-          "inputTarjeta"
+          { style: styles, placeholder: "Número de Tarjeta" },
+          "txtNumeroTarjeta"
         );
+
+        cardNumber.then((element) => {
+          element.on("bin", function (data) {
+            /* Tú código aquí */
+            console.log("data", data);
+          });
+
+          element.on("change", function (data) {
+            /* Tú código aquí */
+          });
+
+          element.on("dcc", function (data) {
+            /* Tú código aquí */
+          });
+
+          element.on("installments", function (data) {
+            /* Tú código aquí */
+          });
+
+          element.on("lastFourDigits", function (data) {
+            /* Tú código aquí */
+          });
+        });
+
         const cardExpiry = payform.createElement(
           "card-expiry",
           {
-            style: { ...styles },
+            style: styles,
             placeholder: "MM/AA",
           },
-          "inputFechaNacimiento"
+          "txtFechaVencimiento"
         );
-        const cardCvv = payform.createElement(
-          "card-cvc",
-          {
-            style: { ...styles },
-            placeholder: "CVV",
-          },
-          "inputCvv"
-        );
-
-        cardNumber.then(
-          (element) => {
-            console.log("hide loader elemento CardNumber", element, cardNumber);
-            element.on("dcc", function (data) {
-              console.log("change data DCC", data);
-            });
-            element.on("installments", function (data) {
-              console.log("change data installments", data);
-            });
-            element.on("change", function (data) {
-              console.log("change data changeCard", data);
-            });
-          },
-          (res) => {
-            console.log("error al cargar numero de tarjeta", res);
-          }
-        );
-
         cardExpiry.then(
           (element) => {
-            console.log("hide loader elemento Expiry", element, cardExpiry);
             element.on("change", function (data) {
               console.log("change data changeExpiry", data);
             });
-          },
+          } /* ,
           (res) => {
             console.log("error al cargar cardExpiry de tarjeta", res);
-          }
+          } */
         );
 
+        const cardCvv = payform.createElement(
+          "card-cvc",
+          {
+            style: styles,
+            placeholder: "CVV",
+          },
+          "txtCvv"
+        );
         cardCvv.then(
           (element) => {
-            // hide-loader
-            console.log("hide loader elemento CardCVV", element, this.cardCvv);
             element.on("change", function (data) {
               console.log("change data changeCvv", data);
             });
-          },
+          } /* ,
           (res) => {
             console.log("error al cardCvv de tarjeta", res);
-          }
+          } */
         );
 
         formNiubiz.classList.remove("hidden");
-        formJson.classList.add("hidden")
+        formJson.classList.add("hidden");
+      }
+    </script>
+    <script type="text/javascript">
+      function sendPayment() {
+        const data = {
+          name: "Juan",
+          lastName: "Perez",
+          email: "jperez@test.com",
+          alias: "prueba",
+        };
+        console.log("info", info);
+        /* Caso de uso: Controles independientes */
+        payform
+          .createToken([cardNumber, cardExpiry, cardCvc], data)
+          .then(function (response) {
+            console.log("respuesta", response);
+          })
+          .catch(function (error) {
+            console.log("error", error);
+          });
       }
     </script>
   </body>
